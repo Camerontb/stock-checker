@@ -52,6 +52,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       [WATCHLIST]
                     </Link>
                     <Link
+                      href="/signals"
+                      className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      [SIGNALS]
+                    </Link>
+                    <Link
                       href="/alerts"
                       className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
                     >
