@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ConvertedPrice } from '@/components/converted-price';
+import { CryptoAllocationChart } from '@/components/crypto-allocation-chart';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -7,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getCryptoPortfolio } from '@/lib/api';
 import type { CryptoPortfolioResult, PortfolioHoldingResult } from '@/lib/api';
-import { cn, formatMarketCap } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 function formatUsd(value: number): string {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
@@ -73,7 +74,12 @@ function HoldingCard({ holding }: { holding: PortfolioHoldingResult }) {
   const isStable = !signal && (holding.symbol === 'USDT' || holding.symbol === 'USDC' || holding.symbol === 'DAI' || holding.symbol === 'BUSD' || holding.symbol === 'BSC-USD');
 
   return (
-    <Card className={cn('overflow-hidden border-l-2', signalBorder(signal?.opinion))}>
+    <Card
+      className={cn(
+        'overflow-hidden border-l-2 transition-colors duration-150 hover:bg-muted/30',
+        signalBorder(signal?.opinion)
+      )}
+    >
       <CardContent className="p-4 space-y-3">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -284,41 +290,58 @@ export default async function CryptoPortfolioPage() {
         <PortfolioSkeleton />
       ) : (
         <>
-          {/* Summary cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {/* Summary row: metrics + allocation donut */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
+            <div className="lg:col-span-2 grid grid-cols-2 gap-3">
+              <Card>
+                <CardContent className="p-3">
+                  <span className="font-mono text-[10px] text-muted-foreground block">TOTAL VALUE</span>
+                  <span className="font-mono text-lg font-bold tabular-nums text-foreground">
+                    {formatUsd(portfolio.totalValue)}
+                  </span>
+                  <ConvertedPrice usd={portfolio.totalValue} />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-3">
+                  <span className="font-mono text-[10px] text-muted-foreground block">TOTAL COST</span>
+                  <span className="font-mono text-lg font-bold tabular-nums text-foreground">
+                    {formatUsd(portfolio.totalCost)}
+                  </span>
+                  <ConvertedPrice usd={portfolio.totalCost} />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-3">
+                  <span className="font-mono text-[10px] text-muted-foreground block">UNREALIZED P&L</span>
+                  <span className={cn('font-mono text-lg font-bold tabular-nums', pnlColor(portfolio.unrealizedPnl))}>
+                    {formatUsd(portfolio.unrealizedPnl)}
+                  </span>
+                  <ConvertedPrice usd={portfolio.unrealizedPnl} />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-3">
+                  <span className="font-mono text-[10px] text-muted-foreground block">P&L %</span>
+                  <span className={cn('font-mono text-lg font-bold tabular-nums', pnlColor(portfolio.unrealizedPnlPct))}>
+                    {formatPct(portfolio.unrealizedPnlPct)}
+                  </span>
+                </CardContent>
+              </Card>
+            </div>
             <Card>
-              <CardContent className="p-3">
-                <span className="font-mono text-[10px] text-muted-foreground block">TOTAL VALUE</span>
-                <span className="font-mono text-lg font-bold tabular-nums text-foreground">
-                  {formatUsd(portfolio.totalValue)}
+              <CardHeader className="border-b border-border py-1.5 px-3">
+                <span className="text-[10px] font-mono font-bold tracking-widest text-primary">
+                  ALLOCATION
                 </span>
-                <ConvertedPrice usd={portfolio.totalValue} />
-              </CardContent>
-            </Card>
-            <Card>
+              </CardHeader>
               <CardContent className="p-3">
-                <span className="font-mono text-[10px] text-muted-foreground block">TOTAL COST</span>
-                <span className="font-mono text-lg font-bold tabular-nums text-foreground">
-                  {formatUsd(portfolio.totalCost)}
-                </span>
-                <ConvertedPrice usd={portfolio.totalCost} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-3">
-                <span className="font-mono text-[10px] text-muted-foreground block">UNREALIZED P&L</span>
-                <span className={cn('font-mono text-lg font-bold tabular-nums', pnlColor(portfolio.unrealizedPnl))}>
-                  {formatUsd(portfolio.unrealizedPnl)}
-                </span>
-                <ConvertedPrice usd={portfolio.unrealizedPnl} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-3">
-                <span className="font-mono text-[10px] text-muted-foreground block">P&L %</span>
-                <span className={cn('font-mono text-lg font-bold tabular-nums', pnlColor(portfolio.unrealizedPnlPct))}>
-                  {formatPct(portfolio.unrealizedPnlPct)}
-                </span>
+                <CryptoAllocationChart
+                  holdings={portfolio.holdings.map((h) => ({
+                    symbol: h.symbol,
+                    valueUsd: h.valueUsd,
+                  }))}
+                />
               </CardContent>
             </Card>
           </div>
@@ -333,8 +356,14 @@ export default async function CryptoPortfolioPage() {
           </Card>
 
           <div className="space-y-3">
-            {portfolio.holdings.map((holding) => (
-              <HoldingCard key={holding.symbol} holding={holding} />
+            {portfolio.holdings.map((holding, i) => (
+              <div
+                key={holding.symbol}
+                className="animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both motion-reduce:animate-none"
+                style={{ animationDelay: `${Math.min(i * 60, 360)}ms` }}
+              >
+                <HoldingCard holding={holding} />
+              </div>
             ))}
           </div>
         </>
