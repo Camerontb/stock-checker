@@ -295,3 +295,52 @@ export async function getCryptoSignals(symbols: string[]): Promise<CryptoAnalysi
   );
   return res.results;
 }
+
+export interface HoldingSignal {
+  opinion: string;
+  score: number;
+  rsi: number;
+  trendRegime?: string;
+  institutionalScore?: number;
+  institutionalPassed?: boolean;
+  stopLoss: number;
+  takeProfit: number;
+  trailingStop: number;
+  patterns: string[];
+  confidence?: string;
+}
+
+export interface PortfolioHoldingResult {
+  symbol: string;
+  name: string;
+  icon: string;
+  rank: number;
+  count: number;
+  priceUsd: number;
+  valueUsd: number;
+  avgBuyPriceUsd: number;
+  unrealizedPnlUsd: number;
+  unrealizedPnlPct: number;
+  priceChange24h: number;
+  priceChange1h: number;
+  priceChange7d: number;
+  yahooTicker: string;
+  signal: HoldingSignal | null;
+}
+
+export interface CryptoPortfolioResult {
+  totalValue: number;
+  totalCost: number;
+  unrealizedPnl: number;
+  unrealizedPnlPct: number;
+  holdings: PortfolioHoldingResult[];
+  generatedAt: string;
+}
+
+/**
+ * GET /api/crypto/portfolio
+ * Fetches user's CoinStats portfolio with signal engine analysis per holding.
+ */
+export async function getCryptoPortfolio(): Promise<CryptoPortfolioResult> {
+  return apiFetch<CryptoPortfolioResult>('/api/crypto/portfolio');
+}

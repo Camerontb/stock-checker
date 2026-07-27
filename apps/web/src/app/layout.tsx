@@ -64,6 +64,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       [CRYPTO]
                     </Link>
                     <Link
+                      href="/crypto/portfolio"
+                      className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      [MY CRYPTO]
+                    </Link>
+                    <Link
                       href="/alerts"
                       className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
                     >
