@@ -17,7 +17,7 @@ export const FX_CURRENCIES = [
 ] as const;
 export type FxCurrency = (typeof FX_CURRENCIES)[number];
 
-export const DEFAULT_CURRENCY: FxCurrency = 'KRW';
+export const DEFAULT_CURRENCY: FxCurrency = 'AUD';
 const STORAGE_KEY = 'display-currency';
 
 /**

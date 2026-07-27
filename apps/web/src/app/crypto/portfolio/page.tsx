@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ConvertedPrice } from '@/components/converted-price';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -115,6 +116,7 @@ function HoldingCard({ holding }: { holding: PortfolioHoldingResult }) {
             <span className="text-foreground tabular-nums font-bold text-xs">
               {formatUsd(holding.valueUsd)}
             </span>
+            <ConvertedPrice usd={holding.valueUsd} />
           </div>
           <div>
             <span className="text-muted-foreground block">AVG BUY</span>
@@ -290,6 +292,7 @@ export default async function CryptoPortfolioPage() {
                 <span className="font-mono text-lg font-bold tabular-nums text-foreground">
                   {formatUsd(portfolio.totalValue)}
                 </span>
+                <ConvertedPrice usd={portfolio.totalValue} />
               </CardContent>
             </Card>
             <Card>
@@ -298,6 +301,7 @@ export default async function CryptoPortfolioPage() {
                 <span className="font-mono text-lg font-bold tabular-nums text-foreground">
                   {formatUsd(portfolio.totalCost)}
                 </span>
+                <ConvertedPrice usd={portfolio.totalCost} />
               </CardContent>
             </Card>
             <Card>
@@ -306,6 +310,7 @@ export default async function CryptoPortfolioPage() {
                 <span className={cn('font-mono text-lg font-bold tabular-nums', pnlColor(portfolio.unrealizedPnl))}>
                   {formatUsd(portfolio.unrealizedPnl)}
                 </span>
+                <ConvertedPrice usd={portfolio.unrealizedPnl} />
               </CardContent>
             </Card>
             <Card>
