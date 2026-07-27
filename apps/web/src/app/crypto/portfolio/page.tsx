@@ -50,19 +50,37 @@ function actionText(opinion: string, symbol: string): string {
   }
 }
 
+/** Label + value pair used across the holding cards. */
+function Metric({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-0.5">
+      <span className="block text-xs font-mono uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
 function PortfolioSkeleton() {
   return (
-    <div className="space-y-3" role="status" aria-live="polite" aria-label="Loading portfolio">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div className="space-y-4" role="status" aria-live="polite" aria-label="Loading portfolio">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i}><CardContent className="p-3"><Skeleton className="h-12 w-full" /></CardContent></Card>
+          <Card key={i}><CardContent className="p-5"><Skeleton className="h-14 w-full" /></CardContent></Card>
         ))}
       </div>
       {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i}><CardContent className="p-3 space-y-2">
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
+        <Card key={i}><CardContent className="p-5 space-y-3">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-3/4" />
         </CardContent></Card>
       ))}
     </div>
@@ -76,152 +94,137 @@ function HoldingCard({ holding }: { holding: PortfolioHoldingResult }) {
   return (
     <Card
       className={cn(
-        'overflow-hidden border-l-2 transition-colors duration-150 hover:bg-muted/30',
+        'overflow-hidden border-l-4 transition-colors duration-150 hover:bg-muted/30',
         signalBorder(signal?.opinion)
       )}
     >
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-5 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {holding.icon && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={holding.icon} alt={holding.symbol} className="w-6 h-6 rounded-full" />
+              <img src={holding.icon} alt={holding.symbol} className="w-9 h-9 rounded-full" />
             )}
             <div>
-              <span className="font-mono font-bold text-sm">{holding.symbol}</span>
-              <span className="font-mono text-[10px] text-muted-foreground ml-1.5">{holding.name}</span>
+              <span className="font-mono font-bold text-xl">{holding.symbol}</span>
+              <span className="font-mono text-sm text-muted-foreground ml-2">{holding.name}</span>
             </div>
           </div>
           {signal && (
-            <Badge className={cn('font-mono tracking-widest rounded-sm text-xs font-bold', signalBg(signal.opinion))}>
+            <Badge className={cn('font-mono tracking-widest rounded-sm text-sm font-bold px-3 py-1', signalBg(signal.opinion))}>
               {signal.opinion}
             </Badge>
           )}
           {isStable && (
-            <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground">STABLE</Badge>
+            <Badge variant="outline" className="font-mono text-sm text-muted-foreground px-3 py-1">STABLE</Badge>
           )}
         </div>
 
         {/* Holdings value */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-[10px]">
-          <div>
-            <span className="text-muted-foreground block">QUANTITY</span>
-            <span className="text-foreground tabular-nums font-bold text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
+          <Metric label="Quantity">
+            <span className="text-foreground tabular-nums font-bold text-base">
               {holding.count < 0.01 ? holding.count.toPrecision(4) : holding.count.toLocaleString('en-US', { maximumFractionDigits: 4 })}
             </span>
-          </div>
-          <div>
-            <span className="text-muted-foreground block">PRICE</span>
-            <span className="text-foreground tabular-nums text-xs">
+          </Metric>
+          <Metric label="Price">
+            <span className="text-foreground tabular-nums text-base">
               {formatUsd(holding.priceUsd)}
             </span>
-          </div>
-          <div>
-            <span className="text-muted-foreground block">VALUE</span>
-            <span className="text-foreground tabular-nums font-bold text-xs">
+          </Metric>
+          <Metric label="Value">
+            <span className="text-foreground tabular-nums font-bold text-base">
               {formatUsd(holding.valueUsd)}
             </span>
             <ConvertedPrice usd={holding.valueUsd} />
-          </div>
-          <div>
-            <span className="text-muted-foreground block">AVG BUY</span>
-            <span className="text-foreground tabular-nums text-xs">
+          </Metric>
+          <Metric label="Avg Buy">
+            <span className="text-foreground tabular-nums text-base">
               {holding.avgBuyPriceUsd > 0 ? formatUsd(holding.avgBuyPriceUsd) : '—'}
             </span>
-          </div>
+          </Metric>
         </div>
 
         {/* P&L row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-[10px]">
-          <div>
-            <span className="text-muted-foreground block">UNREALIZED P&L</span>
-            <span className={cn('tabular-nums font-bold text-xs', pnlColor(holding.unrealizedPnlUsd))}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
+          <Metric label="Unrealized P&L">
+            <span className={cn('tabular-nums font-bold text-base', pnlColor(holding.unrealizedPnlUsd))}>
               {formatUsd(holding.unrealizedPnlUsd)}
             </span>
-          </div>
-          <div>
-            <span className="text-muted-foreground block">P&L %</span>
-            <span className={cn('tabular-nums text-xs', pnlColor(holding.unrealizedPnlPct))}>
+          </Metric>
+          <Metric label="P&L %">
+            <span className={cn('tabular-nums text-base', pnlColor(holding.unrealizedPnlPct))}>
               {formatPct(holding.unrealizedPnlPct)}
             </span>
-          </div>
-          <div>
-            <span className="text-muted-foreground block">24H</span>
-            <span className={cn('tabular-nums text-xs', pnlColor(holding.priceChange24h))}>
+          </Metric>
+          <Metric label="24H">
+            <span className={cn('tabular-nums text-base', pnlColor(holding.priceChange24h))}>
               {formatPct(holding.priceChange24h)}
             </span>
-          </div>
-          <div>
-            <span className="text-muted-foreground block">7D</span>
-            <span className={cn('tabular-nums text-xs', pnlColor(holding.priceChange7d))}>
+          </Metric>
+          <Metric label="7D">
+            <span className={cn('tabular-nums text-base', pnlColor(holding.priceChange7d))}>
               {formatPct(holding.priceChange7d)}
             </span>
-          </div>
+          </Metric>
         </div>
 
         {/* Signal analysis */}
         {signal && (
           <>
             <Separator />
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-[10px]">
-              <div>
-                <span className="text-muted-foreground block">SCORE</span>
-                <span className="text-foreground tabular-nums font-bold text-xs">{Math.round(signal.score)}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block">RSI</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono">
+              <Metric label="Score">
+                <span className="text-foreground tabular-nums font-bold text-base">{Math.round(signal.score)}</span>
+              </Metric>
+              <Metric label="RSI">
                 <span className={cn(
-                  'tabular-nums text-xs',
+                  'tabular-nums text-base',
                   signal.rsi >= 70 ? 'text-destructive' : signal.rsi <= 30 ? 'text-success' : 'text-foreground'
                 )}>
                   {signal.rsi.toFixed(1)}
                 </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block">TREND</span>
+              </Metric>
+              <Metric label="Trend">
                 <span className={cn(
-                  'uppercase text-xs font-bold',
+                  'uppercase text-base font-bold',
                   signal.trendRegime === 'uptrend' ? 'text-success' :
                   signal.trendRegime === 'downtrend' ? 'text-destructive' :
                   'text-muted-foreground'
                 )}>
                   {signal.trendRegime ?? '—'}
                 </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block">INST</span>
+              </Metric>
+              <Metric label="Inst">
                 <span className={cn(
-                  'tabular-nums text-xs',
+                  'tabular-nums text-base',
                   signal.institutionalPassed ? 'text-success font-bold' : 'text-muted-foreground'
                 )}>
                   {signal.institutionalScore != null ? signal.institutionalScore.toFixed(2) : '—'}
                 </span>
-              </div>
+              </Metric>
             </div>
 
             {/* Risk levels */}
-            <div className="grid grid-cols-3 gap-3 font-mono text-[10px]">
-              <div>
-                <span className="text-muted-foreground block">STOP</span>
-                <span className="tabular-nums text-destructive text-xs">{formatUsd(signal.stopLoss)}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block">TARGET</span>
-                <span className="tabular-nums text-success text-xs">{formatUsd(signal.takeProfit)}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground block">TRAIL</span>
-                <span className="tabular-nums text-foreground text-xs">{formatUsd(signal.trailingStop)}</span>
-              </div>
+            <div className="grid grid-cols-3 gap-4 font-mono">
+              <Metric label="Stop">
+                <span className="tabular-nums text-destructive text-base">{formatUsd(signal.stopLoss)}</span>
+              </Metric>
+              <Metric label="Target">
+                <span className="tabular-nums text-success text-base">{formatUsd(signal.takeProfit)}</span>
+              </Metric>
+              <Metric label="Trail">
+                <span className="tabular-nums text-foreground text-base">{formatUsd(signal.trailingStop)}</span>
+              </Metric>
             </div>
 
             {/* Action recommendation */}
             <Separator />
-            <div className="font-mono text-[10px]">
-              <span className="text-muted-foreground block mb-1">RECOMMENDATION</span>
+            <div className="font-mono">
+              <span className="block text-xs uppercase tracking-wider text-muted-foreground mb-1.5">Recommendation</span>
               <p className={cn(
-                'text-xs leading-relaxed',
+                'text-sm sm:text-base leading-relaxed',
                 signal.opinion === 'BUY' ? 'text-success' :
                 signal.opinion === 'SELL' ? 'text-destructive' :
                 'text-foreground'
@@ -232,9 +235,9 @@ function HoldingCard({ holding }: { holding: PortfolioHoldingResult }) {
 
             {/* Patterns */}
             {signal.patterns.length > 0 && (
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1.5">
                 {signal.patterns.map((p) => (
-                  <Badge key={p} variant="outline" className="font-mono text-[10px] px-1.5 py-0.5">
+                  <Badge key={p} variant="outline" className="font-mono text-xs px-2 py-0.5">
                     {p}
                   </Badge>
                 ))}
@@ -258,24 +261,24 @@ export default async function CryptoPortfolioPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-sm font-bold font-mono tracking-widest text-primary">
+          <h1 className="text-2xl font-bold font-mono tracking-wide text-primary">
             CRYPTO PORTFOLIO
           </h1>
-          <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
+          <p className="text-sm font-mono text-muted-foreground mt-1">
             Live holdings from CoinStats + signal engine analysis
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Link
             href="/crypto"
-            className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
           >
             [MARKET]
           </Link>
-          <span className="text-xs font-mono text-muted-foreground">
+          <span className="text-sm font-mono text-muted-foreground">
             {new Date().toISOString().split('T')[0]}
           </span>
         </div>
@@ -283,59 +286,59 @@ export default async function CryptoPortfolioPage() {
 
       {error ? (
         <Alert variant="destructive">
-          <AlertTitle className="font-mono text-xs font-bold">ERROR</AlertTitle>
-          <AlertDescription className="font-mono text-xs">{error}</AlertDescription>
+          <AlertTitle className="font-mono text-sm font-bold">ERROR</AlertTitle>
+          <AlertDescription className="font-mono text-sm">{error}</AlertDescription>
         </Alert>
       ) : !portfolio ? (
         <PortfolioSkeleton />
       ) : (
         <>
           {/* Summary row: metrics + allocation donut */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
-            <div className="lg:col-span-2 grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
+            <div className="lg:col-span-2 grid grid-cols-2 gap-4">
               <Card>
-                <CardContent className="p-3">
-                  <span className="font-mono text-[10px] text-muted-foreground block">TOTAL VALUE</span>
-                  <span className="font-mono text-lg font-bold tabular-nums text-foreground">
+                <CardContent className="p-5">
+                  <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground block mb-1">Total Value</span>
+                  <span className="font-mono text-2xl sm:text-3xl font-bold tabular-nums text-foreground block">
                     {formatUsd(portfolio.totalValue)}
                   </span>
                   <ConvertedPrice usd={portfolio.totalValue} />
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-3">
-                  <span className="font-mono text-[10px] text-muted-foreground block">TOTAL COST</span>
-                  <span className="font-mono text-lg font-bold tabular-nums text-foreground">
+                <CardContent className="p-5">
+                  <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground block mb-1">Total Cost</span>
+                  <span className="font-mono text-2xl sm:text-3xl font-bold tabular-nums text-foreground block">
                     {formatUsd(portfolio.totalCost)}
                   </span>
                   <ConvertedPrice usd={portfolio.totalCost} />
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-3">
-                  <span className="font-mono text-[10px] text-muted-foreground block">UNREALIZED P&L</span>
-                  <span className={cn('font-mono text-lg font-bold tabular-nums', pnlColor(portfolio.unrealizedPnl))}>
+                <CardContent className="p-5">
+                  <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground block mb-1">Unrealized P&L</span>
+                  <span className={cn('font-mono text-2xl sm:text-3xl font-bold tabular-nums block', pnlColor(portfolio.unrealizedPnl))}>
                     {formatUsd(portfolio.unrealizedPnl)}
                   </span>
                   <ConvertedPrice usd={portfolio.unrealizedPnl} />
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-3">
-                  <span className="font-mono text-[10px] text-muted-foreground block">P&L %</span>
-                  <span className={cn('font-mono text-lg font-bold tabular-nums', pnlColor(portfolio.unrealizedPnlPct))}>
+                <CardContent className="p-5">
+                  <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground block mb-1">P&L %</span>
+                  <span className={cn('font-mono text-2xl sm:text-3xl font-bold tabular-nums block', pnlColor(portfolio.unrealizedPnlPct))}>
                     {formatPct(portfolio.unrealizedPnlPct)}
                   </span>
                 </CardContent>
               </Card>
             </div>
             <Card>
-              <CardHeader className="border-b border-border py-1.5 px-3">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-primary">
-                  ALLOCATION
+              <CardHeader className="border-b border-border py-2 px-4">
+                <span className="text-xs font-mono font-bold uppercase tracking-widest text-primary">
+                  Allocation
                 </span>
               </CardHeader>
-              <CardContent className="p-3">
+              <CardContent className="p-4">
                 <CryptoAllocationChart
                   holdings={portfolio.holdings.map((h) => ({
                     symbol: h.symbol,
@@ -347,15 +350,11 @@ export default async function CryptoPortfolioPage() {
           </div>
 
           {/* Holdings */}
-          <Card>
-            <CardHeader className="border-b border-border py-1.5 px-3">
-              <span className="text-[10px] font-mono font-bold tracking-widest text-primary">
-                HOLDINGS — {portfolio.holdings.length} ASSETS
-              </span>
-            </CardHeader>
-          </Card>
+          <h2 className="text-base font-bold font-mono uppercase tracking-widest text-primary pt-2">
+            Holdings — {portfolio.holdings.length} Assets
+          </h2>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {portfolio.holdings.map((holding, i) => (
               <div
                 key={holding.symbol}
