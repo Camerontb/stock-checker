@@ -252,3 +252,46 @@ export function getBacktestData(ticker: string, days = 1825): Promise<BacktestDa
 export function getOHLCV(ticker: string, days = 180): Promise<OHLCVCandle[]> {
   return apiFetch<OHLCVCandle[]>(`/api/screener/${encodeURIComponent(ticker)}/ohlcv?days=${days}`);
 }
+
+// ── Crypto (CoinStats + signal engine) ─────────────────────
+
+export interface CryptoSignalResult {
+  id: string;
+  symbol: string;
+  name: string;
+  icon: string;
+  rank: number;
+  price: number;
+  priceChange1h: number;
+  priceChange1d: number;
+  priceChange1w: number;
+  marketCap: number;
+  volume: number;
+  yahooTicker: string | null;
+}
+
+export interface CryptoAnalysisResult extends TickerResult {
+  cryptoSymbol: string;
+}
+
+/**
+ * GET /api/crypto/coins?limit=50
+ */
+export async function getCryptoCoins(limit = 50): Promise<CryptoSignalResult[]> {
+  const res = await apiFetch<{ results: CryptoSignalResult[] }>(
+    `/api/crypto/coins?limit=${limit}`
+  );
+  return res.results;
+}
+
+/**
+ * GET /api/crypto/signals?symbols=BTC,ETH,SOL
+ * Runs the signal engine on crypto via Yahoo Finance tickers.
+ */
+export async function getCryptoSignals(symbols: string[]): Promise<CryptoAnalysisResult[]> {
+  const params = new URLSearchParams({ symbols: symbols.join(',') });
+  const res = await apiFetch<{ results: CryptoAnalysisResult[] }>(
+    `/api/crypto/signals?${params.toString()}`
+  );
+  return res.results;
+}

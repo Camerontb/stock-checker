@@ -58,6 +58,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       [SIGNALS]
                     </Link>
                     <Link
+                      href="/crypto"
+                      className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      [CRYPTO]
+                    </Link>
+                    <Link
                       href="/alerts"
                       className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
                     >
